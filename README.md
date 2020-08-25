@@ -100,12 +100,53 @@
                objectClass: organizationalUnit
                ou: Group
 
-               [root@server ~]# ldapadd -x -W -D "cn=ldapadm,dc=itzgeek,dc=local" -f base.ldif
+               [root@server ~]# ldapadd -x -W -D "cn=ldapadm,dc=local" -f base.ldif
                Enter LDAP Password: 
-               adding new entry "dc=itzgeek,dc=local"
+               adding new entry "dc=local"
 
-               adding new entry "cn=ldapadm ,dc=itzgeek,dc=local"
+               adding new entry "cn=ldapadm ,dc=local"
 
-               adding new entry "ou=People,dc=itzgeek,dc=local"
+               adding new entry "ou=People,dc=local"
 
-               adding new entry "ou=Group,dc=itzgeek,dc=local"
+               adding new entry "ou=Group,dc=local"
+               
+               
+               
+               
+               
+useradd
+-------
+               [root@server ~]# vi raj.ldif
+               dn: uid=raj,ou=People,dc=local
+               objectClass: top
+               objectClass: account
+               objectClass: posixAccount
+               objectClass: shadowAccount
+               cn: raj
+               uid: raj
+               uidNumber: 1004
+               gidNumber: 100
+               homeDirectory: /home/raj
+               loginShell: /bin/bash
+               gecos: Raj [Admin (at) local]
+               userPassword: {crypt}x
+               shadowLastChange: 17058
+               shadowMin: 0
+               shadowMax: 99999
+               shadowWarning: 7
+               
+               [root@server ~]# ldapadd -x -W -D "cn=ldapadm,dc=itzgeek,dc=local" -f raj.ldif
+               [root@server ~]# ldappasswd -s password -W -D "cn=ldapadm,dc=local" -x "uid=raj,ou=People,dc=local"
+               
+               
+               (option : delete || ldapdelete -W -D "cn=ldapadm,dc=local" "uid=raj,ou=People,dc=local")
+
+ldap client[1,2]
+----------------
+               [root@client1 ~]# yum install -y openldap-clients nss-pam-ldapd
+               [root@client1 ~]# authconfig --enableldap --enableldapauth --ldapserver=192.168.12.10 --ldapbasedn="dc=itzgeek,dc=local" --enablemkhomedir --update
+               [root@client1 ~]# systemctl restart  nslcd
+               [root@client1 ~]# getent passwd raj
+
+               raj:x:1004:100:Raj [Admin (at) local]:/home/raj:/bin/bash
+               
