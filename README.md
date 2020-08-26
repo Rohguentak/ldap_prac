@@ -23,11 +23,13 @@
 
                [root@server ~]# systemctl enable --now slapd
 
+ldap 관리용 비밀 번호 설정
                [root@server ~]# slappasswd
                New password: 
                Re-enter new password: 
                {SSHA}d/thexcQUuSfe3rx3gRaEhHpNJ52N8D3
 
+ldap 서버 설정
                [root@server ~]# vi db.ldif
                dn: olcDatabase={2}hdb,cn=config
                changetype: modify
@@ -45,7 +47,7 @@
                olcRootPW: {SSHA}QF+jBFJ/RWGVwPuDzQI87YJfJtKOYGhK
 
                [root@server ~]# ldapmodify -Y EXTERNAL  -H ldapi:/// -f db.ldif
-               
+모니터링 권한 제한
                [root@server ~]# vi monitor.ldif
                dn: olcDatabase={1}monitor,cn=config
                changetype: modify
@@ -54,6 +56,7 @@
 
                [root@server ~]# ldapmodify -Y EXTERNAL  -H ldapi:/// -f monitor.ldif
 
+ldap certification 생성
                [root@server ~]# openssl req -new -x509 -nodes -out /etc/openldap/certs/ldapcert.pem -keyout /etc/openldap/certs/ldapkey.pem -days 365
 
                [root@server ~]# chown -R ldap:ldap /etc/openldap/certs/*.pem
@@ -70,9 +73,10 @@
                olcTLSCertificateKeyFile: /etc/openldap/certs/ldapkey.pem 
 
                [root@server ~]# ldapmodify -Y EXTERNAL  -H ldapi:/// -f certs.ldif
-               
+ldap 설정 오류 확인               
                [root@server ~]# slaptest -u
                config file testing succeeded
+
 
                [root@server ~]# cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
                
