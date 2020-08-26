@@ -131,8 +131,8 @@ ldap database 설정
                
                
                
-useradd
--------
+add user 
+--------
                [root@server ~]# vi raj.ldif
                dn: uid=raj,ou=People,dc=local
                objectClass: top
