@@ -152,7 +152,7 @@ add user
                shadowMax: 99999
                shadowWarning: 7
                
-               [root@server ~]# ldapadd -x -W -D "cn=ldapadm,dc=itzgeek,dc=local" -f raj.ldif
+               [root@server ~]# ldapadd -x -W -D "cn=ldapadm,dc=local" -f raj.ldif
                
                [root@server ~]# ldappasswd -s password -W -D "cn=ldapadm,dc=local" -x "uid=raj,ou=People,dc=local"
                
@@ -163,7 +163,7 @@ ldap client[1,2]
 ----------------
                [root@client1 ~]# yum install -y openldap-clients nss-pam-ldapd
                
-               [root@client1 ~]# authconfig --enableldap --enableldapauth --ldapserver=192.168.12.10 --ldapbasedn="dc=itzgeek,dc=local" --enablemkhomedir --update
+               [root@client1 ~]# authconfig --enableldap --enableldapauth --ldapserver=192.168.12.10 --ldapbasedn="dc=local" --enablemkhomedir --update
                
                [root@client1 ~]# systemctl restart  nslcd
                
