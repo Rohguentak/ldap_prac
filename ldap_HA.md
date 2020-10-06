@@ -64,14 +64,14 @@ olcRootPW 섹션의 password설정
                
 directory manager password설정
 
-
                [root@dlp ~]# slappasswd
                New password: nexit1
                Re-enter new password: nexit1
                {SSHA}xxxxxxxxxxxxxxxxxxxxxxxx
                
                
-               
+디렉토리 구조 생성 
+
                [root@dlp ~]# vi chdomain.ldif
                dn: olcDatabase={1}monitor,cn=config
                changetype: modify
@@ -136,8 +136,7 @@ directory manager password설정
                dn: ou=Group,dc=srv,dc=world
                objectClass: organizationalUnit
                ou: Group
-           
-디렉토리 구조 생성            
+                     
            
                [root@dlp ~]# ldapadd -x -D cn=Manager,dc=srv,dc=world -W -f basedomain.ldif
                Enter LDAP Password:     # directory manager's password
