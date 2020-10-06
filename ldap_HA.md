@@ -159,6 +159,7 @@ server HA 설정
 -------------
               
 syncprov 모듈 추가
+
                [root@server1 ~]# vi mod_syncprov.ldif
                dn: cn=module,cn=config
                objectClass: olcModuleList
