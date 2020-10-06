@@ -1,0 +1,30 @@
+dn: cn=config
+changetype: modify
+replace: olcServerID
+olcServerID: 1
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+add: olcSyncRepl
+olcSyncRepl: rid=001
+  provider=ldap://192.168.12.10:389/
+  bindmethod=simple
+  
+  binddn="cn=Manager,dc=srv,dc=world"
+  credentials={SSHA}caVBockR94vSVa5ZCt4vDBn4ULam81Vw
+  searchbase="dc=srv,dc=world"
+  scope=sub
+  schemachecking=on
+  type=refreshAndPersist
+  retry="10 5 100 3"
+  interval=00:00:01:00
+-
+add: olcMirrorMode
+olcMirrorMode: TRUE
+
+dn: olcOverlay=syncprov,olcDatabase={2}hdb,cn=config
+changetype: add
+objectClass: olcOverlayConfig
+objectClass: olcSyncProvConfig
+olcOverlay: syncprov
+

@@ -1,0 +1,7 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.12.10	server1	server1.srv.world
+192.168.12.11	server2	server2.srv.world
+
+192.168.12.20	client1	client1.srv.world
+192.168.12.21	client2	client2.srv.world

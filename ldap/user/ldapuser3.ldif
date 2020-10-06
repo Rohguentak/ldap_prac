@@ -1,0 +1,18 @@
+dn: uid=cent3,ou=People,dc=srv,dc=world
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Cent3
+sn: Linux
+userPassword: {SSHA}6DA/OOJhxsblKnv9mCOhRW0roIHQs56V
+loginShell: /bin/bash
+uidNumber: 1003
+gidNumber: 1000
+homeDirectory: /home/cent3
+
+dn: cn=cent3ou=Group,dc=srv,dc=world
+objectClass: posixGroup
+cn: Cent3
+gidNumber: 1000
+memberUid: cent3
+

@@ -1,0 +1,17 @@
+dn: uid=cent1,ou=People,dc=srv,dc=world
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Cent1
+sn: Linux
+userPassword: {SSHA}6DA/OOJhxsblKnv9mCOhRW0roIHQs56V
+loginShell: /bin/bash
+uidNumber: 1001
+gidNumber: 1000
+homeDirectory: /home/cent1
+
+dn: cn=cent1,ou=Group,dc=srv,dc=world
+objectClass: posixGroup
+cn: Cent1
+gidNumber: 1000
+memberUid: cent1
