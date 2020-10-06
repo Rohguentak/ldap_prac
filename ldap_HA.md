@@ -155,49 +155,144 @@ ldap 설정 오류 확인
                config file testing succeeded
                
                
+server HA 설정
+-------------
+              
+syncprov 모듈 추가
+               [root@server1 ~]# vi mod_syncprov.ldif
+               dn: cn=module,cn=config
+               objectClass: olcModuleList
+               cn: module
+               olcModulePath: /usr/lib64/openldap
+               olcModuleLoad: syncprov.la
 
+               [root@server1 ~]# ldapadd -Y EXTERNAL -H ldapi:/// -f mod_syncprov.ldif
+               SASL/EXTERNAL authentication started
+               SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+               SASL SSF: 0
+               adding new entry "cn=module,cn=config"
+
+               [root@server1 ~]# vi syncprov.ldif
+               dn: olcOverlay=syncprov,olcDatabase={2}hdb,cn=config
+               objectClass: olcOverlayConfig
+               objectClass: olcSyncProvConfig
+               olcOverlay: syncprov
+               olcSpSessionLog: 100
+
+               [root@server1 ~]# ldapadd -Y EXTERNAL -H ldapi:/// -f syncprov.ldif
+               SASL/EXTERNAL authentication started
+               SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+               SASL SSF: 0
+               adding new entry "olcOverlay=syncprov,olcDatabase={2}hdb,cn=config"
                
 
+
+데이터 싱크 설정
+
+               주석다 지우고 설정 해야 올바르게 설정 됨
                
+               [root@server1 ~]# vi master01.ldif  
+               dn: cn=config
+               changetype: modify
+               replace: olcServerID
+               olcServerID: 0             //서버마다 다르게 설정
+
+               dn: olcDatabase={2}hdb,cn=config
+               changetype: modify
+               add: olcSyncRepl
+               olcSyncRepl: rid=001
+                 # specify another LDAP server's URI (데이터 싱크 맞출 ldap서버 주소)
+                 provider=ldap://192.168.12.11:389/
+                 bindmethod=simple
+
+                 # own domain name
+                 binddn="cn=Manager,dc=srv,dc=world"
+                 # directory manager's password
+                 credentials=nexit1          ///slappasswd로 생성한 비밀번호 말고 입력한 비밀번호써야 함
+                 searchbase="dc=srv,dc=world"
+                 # includes subtree
+                 scope=sub
+                 schemachecking=on
+                 type=refreshAndPersist
+                 # [retry interval] [retry times] [interval of re-retry] [re-retry times]
+                 retry="30 5 300 3"
+                 # replication interval
+                 interval=00:00:05:00
+               -
+               add: olcMirrorMode
+               olcMirrorMode: TRUE
+
+               dn: olcOverlay=syncprov,olcDatabase={2}hdb,cn=config
+               changetype: add
+               objectClass: olcOverlayConfig
+               objectClass: olcSyncProvConfig
+               olcOverlay: syncprov
                
+               [root@server1 ~]# ldapmodify -Y EXTERNAL -H ldapi:/// -f master01.ldif
+               SASL/EXTERNAL authentication started
+               SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+               SASL SSF: 0
+               modifying entry "cn=config"
+
+               modifying entry "olcDatabase={2}hdb,cn=config"
+
+               adding new entry "olcOverlay=syncprov,olcDatabase={2}hdb,cn=config"
                
 add user 
 --------
-               [root@server ~]# vi raj.ldif
-               dn: uid=raj,ou=People,dc=local
-               objectClass: top
-               objectClass: account
+               [root@server1 ~]# slappasswd
+               New password:
+               Re-enter new password:
+               {SSHA}xxxxxxxxxxxxxxxxx
+               [root@server1 ~]# vi ldapuser.ldif
+               # create new
+               # replace to your own domain name for "dc=***,dc=***" section
+               dn: uid=cent,ou=People,dc=srv,dc=world
+               objectClass: inetOrgPerson
                objectClass: posixAccount
                objectClass: shadowAccount
-               cn: raj
-               uid: raj
-               uidNumber: 1004
-               gidNumber: 100
-               homeDirectory: /home/raj
+               cn: Cent
+               sn: Linux
+               userPassword: {SSHA}xxxxxxxxxxxxxxxxx
                loginShell: /bin/bash
-               gecos: Raj [Admin (at) local]
-               userPassword: {crypt}x
-               shadowLastChange: 17058
-               shadowMin: 0
-               shadowMax: 99999
-               shadowWarning: 7
+               uidNumber: 1000
+               gidNumber: 1000
+               homeDirectory: /home/cent
+
+               dn: cn=cent,ou=Group,dc=srv,dc=world
+               objectClass: posixGroup
+               cn: Cent
+               gidNumber: 1000
+               memberUid: cent
+
+               [root@server1 ~]# ldapadd -x -D cn=Manager,dc=srv,dc=world -W -f ldapuser.ldif
+               Enter LDAP Password:
+               adding new entry "uid=cent,ou=People,dc=srv,dc=world"
+
+               adding new entry "cn=cent,ou=Group,dc=srv,dc=world"
                
-               [root@server ~]# ldapadd -x -W -D "cn=ldapadm,dc=local" -f raj.ldif
+               #####delete command#####
+               [root@server1 ~]# ldapdelete -x -W -D 'cn=Manager,dc=srv,dc=world' "uid=cent,ou=People,dc=srv,dc=world"
+               Enter LDAP Password:
+               [root@server1 ~]# ldapdelete -x -W -D 'cn=Manager,dc=srv,dc=world' "cn=cent,ou=Group,dc=srv,dc=world"
+               Enter LDAP Password:
                
-               [root@server ~]# ldappasswd -s password -W -D "cn=ldapadm,dc=local" -x "uid=raj,ou=People,dc=local"
-               
-               
-               (option : delete || ldapdelete -W -D "cn=ldapadm,dc=local" "uid=raj,ou=People,dc=local")
+               #####search user list#####
+               [root@server1 ~]# ldapsearch -x -b 'ou=People,dc=srv,dc=world'
 
 ldap client[1,2]
 ----------------
                [root@client1 ~]# yum install -y openldap-clients nss-pam-ldapd
                
-               [root@client1 ~]# authconfig --enableldap --enableldapauth --ldapserver=192.168.12.10 --ldapbasedn="dc=local" --enablemkhomedir --update
-               
+               [root@client1 ~]# authconfig --enableldap \
+               --enableldapauth \ 
+               --ldapserver=server1.srv.world,server2.srv.world \
+               --ldapbasedn="dc=srv,dc=world" \
+               --enablemkhomedir \
+               --update
                [root@client1 ~]# systemctl restart  nslcd
                
-               [root@client1 ~]# getent passwd raj
+               [root@client1 ~]# getent passwd cent
 
-               raj:x:1004:100:Raj [Admin (at) local]:/home/raj:/bin/bash
+               cent:x:1000:1000:Cent [Admin (at) local]:/home/cent:/bin/bash
                
